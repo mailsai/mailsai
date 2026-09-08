@@ -1,0 +1,9 @@
+{
+  "name": "mailsai-examples",
+  "private": true,
+  "type": "module",
+  "//": "Keep this at the CURRENT major.minor. It sat at ^0.1.1 while the published SDK was 0.2.1, so `npm install` here fetched 0.1.1 \u2014 which does not declare `quarantined` or `classifier_warning`, the two fields 03-injection-firewall and 01-send exist to teach.",
+  "dependencies": {
+    "@mailsai/sdk": "^0.2.3"
+  }
+}

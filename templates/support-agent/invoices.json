@@ -1,0 +1,27 @@
+[
+  {
+    "number": "4821",
+    "email": "dana@acme.com",
+    "amount": "$1,240.00",
+    "status": "paid",
+    "paidOn": "2026-07-03",
+    "due": "2026-07-01",
+    "period": "June 2026 — Pro plan + 2 seats"
+  },
+  {
+    "number": "4822",
+    "email": "lee@northwind.io",
+    "amount": "$99.00",
+    "status": "open",
+    "due": "2026-08-30",
+    "period": "August 2026 — Scale plan"
+  },
+  {
+    "number": "4823",
+    "email": "ops@brightpier.dev",
+    "amount": "$3,480.00",
+    "status": "open",
+    "due": "2026-09-14",
+    "period": "Q3 2026 — annual prepay, 12 seats"
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.RolloutsAI/mails-agent-email",
+  "title": "Mails.ai — Agent Email",
+  "description": "A real inbox for AI agents: send, receive and thread email, behind a prompt-injection firewall.",
+  "websiteUrl": "https://mails.ai",
+  "version": "0.2.9",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@mailsai/mcp-server",
+      "version": "0.2.9",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MAILS_API_KEY",
+          "description": "Your mails.ai API key. Use an mk_test_ key to run against the sandbox or an mk_live_ key to send real mail. Free key at https://mails.ai",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "MAILS_BASE_URL",
+          "description": "Override the API base URL. Defaults to the hosted mails.ai API; only needed for staging or self-hosted deployments.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

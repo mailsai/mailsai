@@ -1,0 +1,49 @@
+{
+  "name": "@mailsai/sdk",
+  "version": "0.2.4",
+  "description": "Email API for AI agents \u2014 TypeScript SDK. Per-agent email addresses on your domain, per-agent reputation, and prompt-injection scanning on every inbound. Send, receive structured inbound replies, and identify agents via REST. Intent + entity extraction is opt-in.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "email",
+    "ai",
+    "agent",
+    "mcp",
+    "mails.ai",
+    "agent-identity",
+    "sender-reputation",
+    "agent-email",
+    "prompt-injection",
+    "smtp",
+    "transactional-email"
+  ],
+  "license": "MIT",
+  "homepage": "https://mails.ai",
+  "bugs": { "url": "https://mails.ai/contact" },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20"
+  }
+}

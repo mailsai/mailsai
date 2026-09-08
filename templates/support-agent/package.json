@@ -1,0 +1,12 @@
+{
+  "name": "mailsai-support-agent-template",
+  "private": true,
+  "type": "module",
+  "description": "A support agent that reads inbound email, answers from your data, replies in thread, and refuses prompt injection. Runs on a test key alone.",
+  "scripts": {
+    "start": "node agent.mjs"
+  },
+  "dependencies": {
+    "@mailsai/sdk": "^0.2.3"
+  }
+}

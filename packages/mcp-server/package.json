@@ -1,0 +1,54 @@
+{
+  "name": "@mailsai/mcp-server",
+  "version": "0.2.9",
+  "description": "The agent email tool: give any AI agent a real inbox (send + receive + thread) with a reputation & prompt-injection firewall in front of it \u2014 for Claude Desktop, Claude Code, Cursor, Cline, Continue, Windsurf, and any MCP runtime. 20 tools, incl. a test-key sandbox loop.",
+  "type": "module",
+  "bin": {
+    "mcp-server": "dist/index.js",
+    "mails-mcp": "dist/index.js",
+    "mails-mcp-demo": "dist/demo.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "demo": "node dist/demo.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "email",
+    "ai",
+    "agent",
+    "mails.ai",
+    "claude",
+    "cursor",
+    "cline",
+    "continue",
+    "windsurf"
+  ],
+  "license": "MIT",
+  "homepage": "https://mails.ai",
+  "bugs": { "url": "https://mails.ai/contact" },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@mailsai/sdk": "^0.2.3",
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  },
+  "mcpName": "io.github.RolloutsAI/mails-agent-email"
+}

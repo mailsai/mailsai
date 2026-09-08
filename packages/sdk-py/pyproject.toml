@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mailsai"
+version = "0.2.3"
+description = "Email API for AI agents — Python SDK. Per-agent email addresses on your domain, per-agent reputation, and prompt-injection scanning on every inbound. Send, receive structured inbound replies, and identify agents via REST. Intent + entity extraction is opt-in."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Mails.ai", email = "support@mails.ai" }]
+keywords = ["email", "ai", "agent", "mcp", "mails.ai", "agent-identity", "sender-reputation", "agent-email", "prompt-injection", "transactional-email"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Communications :: Email",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["httpx>=0.24.0"]
+
+[project.urls]
+Homepage = "https://mails.ai"
+Documentation = "https://mails.ai/docs"
+Source = "https://github.com/mailsai/mailsai"
+Issues = "https://github.com/mailsai/mailsai/issues"
+
+[tool.setuptools]
+packages = ["mailsai"]
