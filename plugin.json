@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "mailsai",
+  "version": "0.2.9",
+  "description": "Give your AI agent its own email address: send, receive and reply through mails.ai, with an injection score on every inbound and cold outreach refused at the API.",
+  "author": { "name": "mails.ai", "url": "https://mails.ai" },
+  "homepage": "https://mails.ai/features/mcp",
+  "repository": "https://github.com/mailsai/mailsai",
+  "license": "MIT",
+  "keywords": ["email", "inbox", "mcp", "ai-agents", "transactional-email", "prompt-injection"]
+}

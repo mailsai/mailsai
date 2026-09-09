@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mails": {
+      "url": "https://api.mails.ai/mcp",
+      "headers": { "Authorization": "Bearer ${env:MAILS_API_KEY}" }
+    }
+  }
+}

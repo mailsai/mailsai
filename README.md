@@ -56,6 +56,20 @@ No agent to pre-create, no domain to verify, no DNS. A **test key** (`mk_test_�
 entire path — validation, firewall, threading, events, webhooks — and delivers nothing, so you
 can integrate before you decide anything.
 
+
+## Hosted MCP endpoint (no install)
+
+The same 20 tools are served over Streamable HTTP at `https://api.mails.ai/mcp`, authenticated with
+your workspace's API key as a Bearer token (a `mk_test_` key runs the whole sandbox and transmits
+nothing). For any client that takes a URL plus a header:
+
+```json
+{ "mcpServers": { "mails": { "url": "https://api.mails.ai/mcp", "headers": { "Authorization": "Bearer mk_..." } } } }
+```
+
+Claude Code: `claude mcp add --transport http mails https://api.mails.ai/mcp --header "Authorization: Bearer mk_..."`.
+First call worth making: `mails.send` to `reply@test.mails.ai` — it answers within about a second.
+
 ## Why this exists
 
 Most "email for agents" is a send API with agent-flavoured docs. The two things a raw API
