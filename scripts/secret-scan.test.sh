@@ -30,7 +30,11 @@ plant "Cloudflare token"     "CF=cfat_ABCDEFGHIJKLMNOPQRSTUVWXYZ012345"
 plant "AWS access key"       "aws_access_${K}_id = AKIA""IOSFODNN7EXAMPLE"
 plant "database URL"         "DATABASE_URL=postgresql://user:s3cr3tpw@ep-x.neon.tech/db"
 plant "private key block"    "-----BEGIN RSA PRIVATE $(echo $K | tr a-z A-Z)-----"
-plant "tailnet address"      "ssh admin@100.75.33.71"
+# Placeholder, deliberately. 100.64.0.1 is an unassigned address inside the same
+# CGNAT range (100.64.0.0/10) the scanner matches, so this still has teeth — but a
+# FIXTURE MUST NEVER CARRY A REAL FLEET ADDRESS. This line used to name a real host
+# and user, published on a public repo by the very test that scans for such things.
+plant "tailnet address"      "ssh user@100.64.0.1"
 
 plant "private server module"  'import { db } from "@/lib/db"'
 plant "pool-trust logic"       'export { poolFor } from "./lib/pool-trust"'
