@@ -55,6 +55,18 @@ scan "raw quarantine threshold" '(QUARANTINE_THRESHOLD|HOLD_LINE|quarantine_thre
 
 scan "tailnet address"         '(^|[^0-9.])100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\.[0-9]{1,3}\.[0-9]{1,3}([^0-9.]|$)'
 
+# THE EXCLUSION ABOVE IS A BLIND SPOT — close it. Every scan() skips this file and the
+# test file, because they must contain the patterns they hunt for. That is necessary and
+# it is also exactly where a real secret can hide unseen: on 2026-09-09 a REAL fleet host
+# and username sat in the test's tailnet fixture, published on this public repo by the
+# very test written to keep such things out, and no scan could ever have caught it.
+# So scan those two files too, narrowly: a fleet address is refused unless it is in the
+# documentation placeholder range 100.64.0.x, which is unassigned.
+fixture_out=$(grep -nE '(^|[^0-9.])100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\.[0-9]{1,3}\.[0-9]{1,3}([^0-9.]|$)' \
+                scripts/secret-scan.sh scripts/secret-scan.test.sh 2>/dev/null \
+              | grep -vE '100\.64\.0\.[0-9]{1,3}' | head -3)
+[ -n "$fixture_out" ] && hit "real tailnet address in a scanner fixture" "$(echo "$fixture_out" | head -1 | cut -c1-160)"
+
 # An .env should never be tracked here at all, whatever it happens to contain.
 # `.env.example` / `.sample` / `.template` are documentation and are allowed;
 # a real `.env`, or `.env.local`/`.env.production`, never is.
