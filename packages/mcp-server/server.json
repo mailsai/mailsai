@@ -1,16 +1,16 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.RolloutsAI/mails-agent-email",
+  "name": "ai.mails/agent-email",
   "title": "Mails.ai — Agent Email",
   "description": "A real inbox for AI agents: send, receive and thread email, behind a prompt-injection firewall.",
   "websiteUrl": "https://mails.ai",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@mailsai/mcp-server",
-      "version": "0.2.9",
+      "version": "0.2.10",
       "transport": {
         "type": "stdio"
       },
