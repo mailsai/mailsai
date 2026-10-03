@@ -4,13 +4,13 @@
   "title": "Mails.ai — Agent Email",
   "description": "A real inbox for AI agents: send, receive and thread email, behind a prompt-injection firewall.",
   "websiteUrl": "https://mails.ai",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@mailsai/mcp-server",
-      "version": "0.2.10",
+      "version": "0.2.11",
       "transport": {
         "type": "stdio"
       },

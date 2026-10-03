@@ -1,6 +1,6 @@
 {
   "name": "@mailsai/mcp-server",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "The agent email tool: give any AI agent a real inbox (send + receive + thread) with a reputation & prompt-injection firewall in front of it \u2014 for Claude Desktop, Claude Code, Cursor, Cline, Continue, Windsurf, and any MCP runtime. 20 tools, incl. a test-key sandbox loop.",
   "type": "module",
   "bin": {
