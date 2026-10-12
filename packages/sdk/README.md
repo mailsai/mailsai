@@ -27,9 +27,7 @@ await client.agents.create("sarah");
 // Reads MAILS_API_KEY from env (or pass via mails.agent(name, { apiKey: "mk_live_..." }))
 const sarah = mails.agent("sarah");
 
-// Send transactional mail — something the recipient asked for. mails.ai firewalls
-// cold outreach: a "just reaching out / looking forward to talking" body is rejected
-// with 422 cold_email_prohibited, by design.
+// Send transactional mail: something the recipient asked for.
 await sarah.send({
   to: "user@example.com",
   subject: "Your password reset code",

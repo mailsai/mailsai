@@ -19,9 +19,7 @@ from mailsai import Client
 # Reads MAILS_API_KEY from env (or pass api_key=... explicitly)
 client = Client()
 
-# mails.ai is transactional-only: mail the recipient asked for. Cold outreach and bulk
-# marketing are refused with 422 cold_email_prohibited — that is deliberate, and it is
-# what keeps the sending reputation clean for everyone on the platform.
+# Send transactional mail: something the recipient asked for.
 sent = client.send(**{
     "from": "sarah",
     "to": "you@example.com",
