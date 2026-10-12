@@ -97,24 +97,26 @@ event — not a MIME blob you write a parser for:
 }
 ```
 
-### 2. An agent reading email is an attack surface, and one that sends can torch you
+### 2. An agent that reads email is an attack surface, and one that sends carries your reputation
 
 A prompt-injection payload hidden in an inbound message is the top security risk for any agent
-that acts on what it reads. Every inbound is scanned across six categories and quarantined
-before your model sees it, so your branch is `if (event.quarantined) return;` — our verdict,
-not a threshold you have to pick and re-tune yourself — instead of hoping your model notices
-it is being attacked inside the same prompt as the attack. (`injection_score` is still there
-when you want the raw number.)
+that acts on what it reads. Every inbound is scanned across six categories before your model
+sees it, and at 0.95 and up it is quarantined. Treat that verdict as the floor, and also hold
+mail that was not scanned (no score) or scored 0.5 and up, because a scan that could not run
+scores exactly 0.5:
 
-And in the other direction: **cold outreach is refused inside the send call** with
-`422 cold_email_prohibited`. Not a setting, not a clause in an acceptable-use policy — a
-refusal, with a reason your agent can read, a sandbox to test against and a second review if
-you think it was wrong. An agent that crosses a 0.3% complaint rate auto-suspends, before the
-upstream provider's 0.5% line ever sees it. Your reputation cannot be spent by a prompt you
+```js
+if (event.quarantined || typeof event.injection_score !== "number" || event.injection_score >= 0.5) {
+  return holdForAPerson(event);
+}
+```
+
+That beats hoping your model notices it is being attacked inside the same prompt as the attack.
+
+On the way out, every send is checked before it leaves, and each agent has its own reputation
+score. An agent that crosses a 0.3% complaint rate is suspended automatically, before the
+upstream provider's 0.5% line ever sees it, so your reputation cannot be spent by a prompt you
 did not write.
-
-That refusal is the product, not a limitation of it: it is why a shared sending estate stays
-clean enough to be worth being on.
 
 ## What's here
 
@@ -124,7 +126,7 @@ clean enough to be worth being on.
 | **[packages/sdk](packages/sdk)** | `@mailsai/sdk` — TypeScript / JavaScript, ESM. |
 | **[packages/sdk-py](packages/sdk-py)** | `mailsai` — Python 3.10+. |
 | **[templates/support-agent](templates/support-agent)** | **Start here.** A working support agent — reads inbound mail, answers from your data, replies in-thread, escalates refunds, refuses prompt injection. One test key, no LLM key, no DNS. |
-| **[examples](examples)** | Six runnable examples: send, inbox loop, the injection firewall, OpenAI Agents SDK, LangGraph, MCP client config. |
+| **[examples](examples)** | Seven runnable examples: send, inbox loop, the injection firewall, OpenAI Agents SDK, LangGraph, MCP client config, and an assistant you forward email to. |
 
 ## MCP in one block
 

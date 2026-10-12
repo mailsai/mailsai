@@ -10,12 +10,13 @@ export MAILS_API_KEY=mk_test_xxx
 
 | | What it shows | Run |
 |---|---|---|
-| [01-send](01-send) | First email out, and the firewall refusing a cold one | `npm i @mailsai/sdk && node 01-send/index.mjs` |
+| [01-send](01-send) | First email out, and how a test key flags a message a live key would not send | `npm i @mailsai/sdk && node 01-send/index.mjs` |
 | [02-inbox-loop](02-inbox-loop) | The agent has an inbox; replies arrive as structured events, threading back in | `node 02-inbox-loop/index.mjs` |
 | [03-injection-firewall](03-injection-firewall) | A real prompt-injection payload, scored and quarantined before your model sees it | `node 03-injection-firewall/index.mjs` |
 | [04-openai-agents-sdk](04-openai-agents-sdk) | Two function tools give an OpenAI Agents SDK agent its own mailbox | `pip install mailsai openai-agents && python 04-openai-agents-sdk/agent.py` |
 | [05-langgraph](05-langgraph) | A conditional edge that branches on `injection_score` | `pip install mailsai langgraph && python 05-langgraph/graph.py` |
 | [06-mcp-clients](06-mcp-clients) | Claude Desktop / Claude Code / Cursor / Cline / Continue / Windsurf config | see the README |
+| [07-forwarded-email-assistant](07-forwarded-email-assistant) | Forward it a bill with "cancel this" on top: it drafts the request, asks before sending, follows up and passes the answer back | `OWNER_EMAIL=you@example.com node 07-forwarded-email-assistant/index.mjs` |
 
 ## The two things worth taking away
 
@@ -24,9 +25,10 @@ export MAILS_API_KEY=mk_test_xxx
 you enable classification. You branch on numbers instead of writing your own parser and your
 own detector.
 
-**Sending is bounded by the API, not by your prompt.** Cold outreach is refused inside the send
-call with `422 cold_email_prohibited`. That is not a setting you can forget to switch on, and it
-holds when the instruction to send it arrived inside an email your agent was reading.
+**The loop keeps its state in mails.ai.** A draft waits until a person approves it, tags tie a
+conversation's messages together, and a scheduled follow-up can be canceled when the answer
+lands. An agent that restarts reads all of it back, so 07 keeps nothing locally except its
+place in the event stream.
 
 ## Going live
 
