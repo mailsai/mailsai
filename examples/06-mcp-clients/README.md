@@ -1,8 +1,9 @@
 # Give Claude, Cursor or any MCP client an inbox
 
-`@mailsai/mcp-server` exposes 20 tools over [MCP](https://modelcontextprotocol.io) — send,
-reply, forward, threads, inbound events, drafts, agents, reputation, suppression, webhooks —
-so an assistant can run email itself instead of you writing glue.
+`@mailsai/mcp-server` exposes every mails.ai API operation as a tool over [MCP](https://modelcontextprotocol.io) — send,
+reply, forward, threads, inbound events, drafts, agents, reputation, suppression, webhooks,
+waiting for a sign-up code or link — so an assistant can run email itself instead of you
+writing glue.
 
 ## See it work before configuring anything
 

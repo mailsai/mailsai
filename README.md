@@ -59,7 +59,7 @@ can integrate before you decide anything.
 
 ## Hosted MCP endpoint (no install)
 
-The same 20 tools are served over Streamable HTTP at `https://api.mails.ai/mcp`, authenticated with
+The same tools are served over Streamable HTTP at `https://api.mails.ai/mcp`, authenticated with
 your workspace's API key as a Bearer token (a `mk_test_` key runs the whole sandbox and transmits
 nothing). For any client that takes a URL plus a header:
 
@@ -68,7 +68,7 @@ nothing). For any client that takes a URL plus a header:
 ```
 
 Claude Code: `claude mcp add --transport http mails https://api.mails.ai/mcp --header "Authorization: Bearer mk_..."`.
-First call worth making: `mails.send` to `reply@test.mails.ai` — it answers within about a second.
+First call worth making: `mails_send` to `reply@test.mails.ai` — it answers within about a second.
 
 ## Why this exists
 

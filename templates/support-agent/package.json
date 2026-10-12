@@ -7,6 +7,6 @@
     "start": "node agent.mjs"
   },
   "dependencies": {
-    "@mailsai/sdk": "^0.2.3"
+    "@mailsai/sdk": "^0.4.0"
   }
 }
