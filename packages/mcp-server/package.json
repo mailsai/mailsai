@@ -1,7 +1,7 @@
 {
   "name": "@mailsai/mcp-server",
-  "version": "0.2.11",
-  "description": "The agent email tool: give any AI agent a real inbox (send + receive + thread) with a reputation & prompt-injection firewall in front of it \u2014 for Claude Desktop, Claude Code, Cursor, Cline, Continue, Windsurf, and any MCP runtime. 20 tools, incl. a test-key sandbox loop.",
+  "version": "0.4.0",
+  "description": "The agent email tool: give any AI agent a real inbox (send + receive + thread) with a reputation & prompt-injection firewall in front of it \u2014 for Claude Desktop, Claude Code, Cursor, Cline, Continue, Windsurf, and any MCP runtime. Every mails.ai API operation as a tool, incl. a test-key sandbox loop.",
   "type": "module",
   "bin": {
     "mcp-server": "dist/index.js",
@@ -37,14 +37,14 @@
   "homepage": "https://mails.ai",
   "bugs": { "url": "https://mails.ai/contact" },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
     "@mailsai/sdk": "^0.2.3",
-    "@modelcontextprotocol/sdk": "^1.0.4"
+    "@modelcontextprotocol/server": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
