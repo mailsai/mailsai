@@ -23,11 +23,14 @@ const support = mails.agent(AGENT);
 // 1) React to replies as they land. This is a long-lived SSE stream — it stays
 //    open, so run it in a worker, not in a request handler.
 const stream = support.onReply(async (event) => {
-  // ALWAYS present, the security + identity layer:
-  //   event.injection_score    0-1, six-category prompt-injection scan
+  // The security + identity layer:
+  //   event.quarantined        true at 0.95 and up: our verdict, the floor
+  //   event.injection_score    0-1, six-category prompt-injection scan; missing when the
+  //                            message was not scanned, exactly 0.5 when the scan could not run
   //   event.sender_reputation  0-1, this sender's history
-  if ((event.injection_score ?? 0) > 0.5) {
-    console.log("⚠ refusing to act — injection score", event.injection_score, event.data.injection_categories);
+  // Hold anything quarantined, unscanned or scored 0.5 and up for a person.
+  if (event.quarantined || typeof event.injection_score !== "number" || event.injection_score >= 0.5) {
+    console.log("⚠ held for a person — injection score", event.injection_score ?? "(not scanned)", event.data.injection_categories);
     return; // your model never sees an unlabelled attack
   }
 

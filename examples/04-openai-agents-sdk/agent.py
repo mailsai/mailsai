@@ -43,10 +43,12 @@ def read_replies(limit: int = 5) -> str:
     lines = []
     for e in support_inbox.list_replies(limit=limit)["data"]:
         sender = e["data"]["from"]["address"]
-        # injection_score rides EVERY inbound event, whether or not classification is on.
-        if (e.get("injection_score") or 0) > 0.5:
+        # Hold anything quarantined, unscanned (no score) or scored 0.5 and up. A scan that
+        # could not run scores exactly 0.5, so it is held too.
+        score = e.get("injection_score")
+        if e.get("quarantined") or not isinstance(score, (int, float)) or score >= 0.5:
             lines.append(
-                f"[QUARANTINED — prompt injection {e['injection_score']}] "
+                f"[QUARANTINED — prompt injection {score if score is not None else 'not scanned'}] "
                 f"from {sender}: content withheld on purpose"
             )
             continue

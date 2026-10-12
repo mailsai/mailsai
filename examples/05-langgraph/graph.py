@@ -50,11 +50,13 @@ def collect_reply(state: State) -> State:
 
 
 def route(state: State) -> str:
-    """The conditional edge. injection_score is on every inbound event."""
+    """The conditional edge. Quarantined, unscanned (no score) or 0.5 and up is held: a scan
+    that could not run scores exactly 0.5."""
     reply = state.get("reply")
     if not reply:
         return "wait"
-    if (reply.get("injection_score") or 0) > 0.5:
+    score = reply.get("injection_score")
+    if reply.get("quarantined") or not isinstance(score, (int, float)) or score >= 0.5:
         return "quarantine"
     return "answer"
 
@@ -75,7 +77,7 @@ def quarantine(state: State) -> State:
     return {
         **state,
         "outcome": "quarantined injection score=%s categories=%s"
-        % (reply["injection_score"], reply["data"].get("injection_categories")),
+        % (reply.get("injection_score", "not scanned"), reply["data"].get("injection_categories")),
     }
 
 
