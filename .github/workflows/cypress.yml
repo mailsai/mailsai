@@ -1,0 +1,47 @@
+name: cypress
+
+# @mailsai/cypress (packages/cypress): its unit tests, then a real headless Cypress run of the
+# package as npm would publish it, against a stand-in for the mails.ai API
+# (packages/cypress/e2e/run.mjs). Cypress 16 is the latest major. 13.0.0 is the oldest the package
+# supports, from before cy.env(), where it reads its settings with Cypress.env().
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Cypress ${{ matrix.cypress }}
+    # Pinned: GitHub moves ubuntu-latest to Ubuntu 26 from 2026-10-19, and this job needs the
+    # system libraries Cypress's Electron runs on.
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        cypress: ["16", "13.0.0"]
+    defaults:
+      run:
+        working-directory: packages/cypress
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The package's own dev dependencies are tsc and Cypress's types. The Cypress app is
+      # installed by the e2e run, in the version under test.
+      - run: npm install --no-audit --no-fund --ignore-scripts
+      - run: npm run build
+      - run: node --test test/*.test.mjs
+      - run: npm run test:e2e
+        env:
+          E2E_CYPRESS_VERSION: ${{ matrix.cypress }}
+      - name: Keep the screenshots (the Command Log, and any failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-${{ matrix.cypress }}-screenshots
+          path: packages/cypress/e2e/cypress/screenshots
+          if-no-files-found: ignore

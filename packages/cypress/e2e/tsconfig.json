@@ -1,0 +1,14 @@
+// For cypress.config.ts. Without it, Cypress 13 compiles the config with the package's build
+// tsconfig one folder up, whose moduleResolution "Bundler" it rejects (TS5095). The specs have
+// their own, cypress/tsconfig.json.
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "types": ["node"]
+  },
+  "include": ["cypress.config.ts"]
+}

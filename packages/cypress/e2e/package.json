@@ -1,0 +1,10 @@
+{
+  "name": "mailsai-cypress-e2e",
+  "private": true,
+  "description": "The real Cypress run of @mailsai/cypress against a stand-in for the mails.ai API. Run it from packages/cypress with npm run test:e2e.",
+  "devDependencies": {
+    "@types/node": "^22",
+    "cypress": "^16.2.0",
+    "typescript": "^5"
+  }
+}

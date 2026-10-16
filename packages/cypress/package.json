@@ -1,0 +1,57 @@
+{
+  "name": "@mailsai/cypress",
+  "version": "0.1.0",
+  "description": "Cypress commands for mails.ai: give each test run its own email address, then wait for the sign-up code or link sent to it.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test:e2e": "npm run build && node e2e/run.mjs"
+  },
+  "keywords": [
+    "cypress",
+    "cypress-plugin",
+    "email",
+    "email-testing",
+    "otp",
+    "verification-code",
+    "magic-link",
+    "e2e",
+    "mails.ai"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mailsai/mailsai.git",
+    "directory": "packages/cypress"
+  },
+  "homepage": "https://mails.ai",
+  "bugs": { "url": "https://mails.ai/contact" },
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "cypress": ">=13.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "cypress": "^16.2.0",
+    "typescript": "^5"
+  }
+}
