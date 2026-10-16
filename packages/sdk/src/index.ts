@@ -773,6 +773,10 @@ export type TestInboundInput = {
   agent: string;
   /** Sender address. Required unless `raw_base64` is sent. */
   from?: string;
+  /** The address the message was sent to, kept as its `delivered_to`: an address real mail
+   *  reaches this agent at, such as a plus address from {@link plusAddress}. Left out, it is the
+   *  agent's `receiving_address`; any other address is a 400 `invalid_param_value`. */
+  to?: string;
   from_name?: string;
   subject?: string;
   /** Message text. Required unless `raw_base64` is sent. */
