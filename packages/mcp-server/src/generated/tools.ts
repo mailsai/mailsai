@@ -5,7 +5,7 @@
 import type { GeneratedTool, RouteFacts } from "../types.ts";
 
 /** This package's version (package.json): what `initialize` and mails_me report. */
-export const MCP_SERVER_VERSION = "0.4.0";
+export const MCP_SERVER_VERSION = "0.5.0";
 
 /** The API document the tools were generated from: 74 operations. */
 export const API_DOCUMENT = {"version":"0.2.0","operations":74} as const;
@@ -879,6 +879,11 @@ export const GENERATED_TOOLS: GeneratedTool[] = [
           "maxLength": 320,
           "description": "Only mail from this sender: an address (`noreply@github.com`, in any case) or a domain (`github.com`, which takes its subdomains such as `mail.github.com` and never `github.com.evil.example`). It is the From header's address, proven only when the message's `dmarc` is `pass`. Anything else answers `400 invalid_param_value`."
         },
+        "to": {
+          "type": "string",
+          "maxLength": 320,
+          "description": "Only mail sent to this address, in any case: the message's `delivered_to`. In a query string, write its `+` as `%2B`: one left as it is arrives as a space, which is read back as `+`. Mail received before 2026-10-16 has no `delivered_to` and never matches. Anything that is not an address answers `400 invalid_param_value`."
+        },
         "since": {
           "type": "string",
           "format": "date-time",
@@ -920,6 +925,10 @@ export const GENERATED_TOOLS: GeneratedTool[] = [
       "from": {
         "in": "query",
         "key": "from"
+      },
+      "to": {
+        "in": "query",
+        "key": "to"
       },
       "since": {
         "in": "query",

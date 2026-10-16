@@ -533,6 +533,9 @@ export type ReceivedMessage = {
   /** The envelope sender (SMTP MAIL FROM), where bounces go. Null on mail received before this field was added. */
   envelope_from?: string | null;
   to: string;
+  /** The address the email was sent to: the agent's `receiving_address`, or a plus address of it
+   *  (see {@link plusAddress}). What the `to` filter matches. Null on mail received before 2026-10-16. */
+  delivered_to?: string | null;
   subject?: string;
   is_thread_reply?: boolean;
   in_reply_to_message_id?: string;
@@ -968,6 +971,9 @@ class MailsError extends Error {
    *  never helps (a cap that only an upgrade or a deletion lifts). Undefined when the server did
    *  not say. */
   resetsAt?: string | null;
+  /** On a 402 (a plan limit, or a feature the plan does not include), the page where the plan can
+   *  be changed: the error's `upgrade_url`. The message then ends with it too. */
+  upgradeUrl?: string;
   constructor(opts: {
     type: string;
     code: string;
@@ -977,6 +983,7 @@ class MailsError extends Error {
     param?: string;
     retryAfterSeconds?: number;
     resetsAt?: string | null;
+    upgradeUrl?: string;
   }) {
     super(opts.message);
     this.name = "MailsError";
@@ -987,6 +994,7 @@ class MailsError extends Error {
     this.param = opts.param;
     if (opts.retryAfterSeconds !== undefined) this.retryAfterSeconds = opts.retryAfterSeconds;
     if (opts.resetsAt !== undefined) this.resetsAt = opts.resetsAt;
+    if (opts.upgradeUrl !== undefined) this.upgradeUrl = opts.upgradeUrl;
   }
 }
 
@@ -1261,7 +1269,7 @@ class MailsClient {
       const res = await this.fetchImpl(`${this.baseUrl}${path}`, { method, headers, body: payload });
       const requestId = res.headers.get("x-request-id") ?? undefined;
       if (res.ok) return res;
-      let err: { error?: { type?: string; code?: string; message?: string; param?: string } & LimitReset } = {};
+      let err: { error?: { type?: string; code?: string; message?: string; param?: string; upgrade_url?: unknown } & LimitReset } = {};
       try {
         err = JSON.parse(await res.text());
       } catch {
@@ -1293,6 +1301,10 @@ class MailsClient {
       if (stop?.seconds !== undefined) {
         message += ` It resets in ${stop.seconds} s (at ${resetsAt}): longer than this client waits on its own (${this.maxRetryWaitSeconds} s).`;
       }
+      // A plan refusal names the page where the plan can be changed; the message ends with it, so
+      // it reaches a log or a test report that prints only the message.
+      const upgradeUrl = typeof err.error?.upgrade_url === "string" && err.error.upgrade_url ? err.error.upgrade_url : undefined;
+      if (upgradeUrl) message += ` Change your plan: ${upgradeUrl}`;
       const fields = {
         type: err.error?.type ?? (limited ? "rate_limit_error" : "api_error"),
         code: err.error?.code ?? "unknown",
@@ -1302,6 +1314,7 @@ class MailsClient {
         param: err.error?.param,
         retryAfterSeconds,
         resetsAt,
+        upgradeUrl,
       };
       throw limited ? new RateLimitError(fields) : new MailsError(fields);
     }
@@ -1720,14 +1733,45 @@ class MessagesResource {
   }
 }
 
+/**
+ * A plus address of an agent: its `receiving_address` with `+<tag>` before the `@`, which reaches
+ * the same agent. Give each test run or sign-up its own, then wait for mail sent to it alone:
+ *
+ *   const email = plusAddress(agent.receiving_address, `run-${Date.now()}`);
+ *   // …sign up with `email`…
+ *   const { message } = await client.received.wait({ to: email, has: "code" });
+ *
+ * The tag is lowercased, as mail addresses are matched in lower case; it may hold letters, digits,
+ * `.`, `_`, `-` and `+`. The part of an address before the `@` holds at most 64 characters, so a
+ * long receiving address leaves less room for the tag, and one that is 64 characters already has
+ * none: the function throws, saying how much room there is.
+ */
+export function plusAddress(receivingAddress: string, tag: string): string {
+  const at = receivingAddress.lastIndexOf("@");
+  if (at < 1) throw new Error(`Not an address: ${JSON.stringify(receivingAddress)}`);
+  const t = tag.replace(/^[ \t\r\n]+|[ \t\r\n]+$/g, "").toLowerCase();
+  if (!/^[a-z0-9._+-]{1,40}$/.test(t)) throw new Error(`A tag is 1 to 40 letters, digits, ".", "_", "-" or "+". Received: ${JSON.stringify(tag)}`);
+  const local = receivingAddress.slice(0, at).split("+")[0];
+  const room = 64 - local.length - 1;
+  if (t.length > room) {
+    throw new Error(
+      room < 1
+        ? `${receivingAddress} has no room for a tag: the part of an address before the @ holds at most 64 characters, and it already has ${local.length}.`
+        : `The part of an address before the @ holds at most 64 characters, so a tag on ${receivingAddress} can have at most ${room}. Received ${t.length}: ${JSON.stringify(tag)}`
+    );
+  }
+  return `${local}+${t}@${receivingAddress.slice(at + 1)}`.toLowerCase();
+}
+
 class ReceivedResource {
   attachments: ReceivedAttachmentsResource;
   constructor(private c: MailsClient) {
     this.attachments = new ReceivedAttachmentsResource(c);
   }
   /** `q` is a substring of the subject, body or sender address; word search is `client.search`.
-   *  `from` is exact: an address, or a domain and its subdomains. `since` is an ISO 8601 time. */
-  list(opts?: { limit?: number; cursor?: string; agent_id?: string; thread_id?: string; q?: string; from?: string; since?: string }) {
+   *  `from` is exact: an address, or a domain and its subdomains. `to` is the address the mail was
+   *  sent to, a plus address included ({@link plusAddress}). `since` is an ISO 8601 time. */
+  list(opts?: { limit?: number; cursor?: string; agent_id?: string; thread_id?: string; q?: string; from?: string; to?: string; since?: string }) {
     const qs = new URLSearchParams();
     if (opts?.limit) qs.set("limit", String(opts.limit));
     if (opts?.cursor) qs.set("cursor", opts.cursor);
@@ -1735,6 +1779,7 @@ class ReceivedResource {
     if (opts?.thread_id) qs.set("thread_id", opts.thread_id);
     if (opts?.q) qs.set("q", opts.q);
     if (opts?.from) qs.set("from", opts.from);
+    if (opts?.to) qs.set("to", opts.to);
     if (opts?.since) qs.set("since", opts.since);
     return this.c.request<ListResult<ReceivedMessage>>(
       "GET",
@@ -1743,12 +1788,16 @@ class ReceivedResource {
   }
   /** The newest received message that matches, waiting up to `timeout` seconds (0 to 50, default
    *  30) for one to arrive; `message` is null when none did. `since` defaults to the last 5
-   *  minutes; `has` is `code` or `link`. Mail judged forged and quarantined mail never match.
+   *  minutes; `has` is `code` or `link`; `to` takes only mail sent to that address, such as the plus
+   *  address one test run signed up with ({@link plusAddress}). Mail judged forged and quarantined
+   *  mail never match. Throws a 402 `plan_limit_exceeded` at once when the newest mail sent to `to`
+   *  came past the plan's plus addresses a day, as only a record of it was kept.
    *  A sign-up code: `(await client.received.wait({ from: "github.com", has: "code" })).message?.codes?.[0]?.value`. */
-  wait(opts?: { agent_id?: string; from?: string; since?: string; has?: "code" | "link"; timeout?: number }) {
+  wait(opts?: { agent_id?: string; from?: string; to?: string; since?: string; has?: "code" | "link"; timeout?: number }) {
     const qs = new URLSearchParams();
     if (opts?.agent_id) qs.set("agent_id", opts.agent_id);
     if (opts?.from) qs.set("from", opts.from);
+    if (opts?.to) qs.set("to", opts.to);
     if (opts?.since) qs.set("since", opts.since);
     if (opts?.has) qs.set("has", opts.has);
     if (opts?.timeout !== undefined) qs.set("timeout", String(opts.timeout));

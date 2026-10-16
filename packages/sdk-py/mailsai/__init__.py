@@ -58,7 +58,7 @@ try:  # installed normally
 
     __version__ = _pkg_version("mailsai")
 except Exception:  # running from a source checkout, or metadata unavailable
-    __version__ = "0.4.0"
+    __version__ = "0.5.0"
 __all__ = [
     "agent",
     "Agent",
@@ -67,6 +67,7 @@ __all__ = [
     "RateLimitError",
     "verify_webhook",
     "create_client",
+    "plus_address",
     "__version__",
 ]
 
@@ -96,6 +97,10 @@ class MailsError(Exception):
     ``retry_after_seconds`` and ``resets_at`` (ISO 8601, UTC) are set when the server said when
     the call can succeed: its Retry-After, or a 429 body's ``retry_after_seconds`` and
     ``resets_at``, e.g. on a 429 whose wait is longer than the client's ``max_retry_wait``.
+
+    ``upgrade_url`` is set on a 402 (a plan limit, or a feature the plan does not include): the
+    page where the plan can be changed, the error's ``upgrade_url``. The message then ends with it
+    too.
     """
 
     def __init__(
@@ -108,6 +113,7 @@ class MailsError(Exception):
         param: Optional[str] = None,
         retry_after_seconds: Optional[int] = None,
         resets_at: Optional[str] = None,
+        upgrade_url: Optional[str] = None,
     ):
         super().__init__(message)
         self.type = type
@@ -118,6 +124,7 @@ class MailsError(Exception):
         self.param = param
         self.retry_after_seconds = retry_after_seconds
         self.resets_at = resets_at
+        self.upgrade_url = upgrade_url
 
 
 class RateLimitError(MailsError):
@@ -292,6 +299,43 @@ def _from_alias(params: Dict[str, Any]) -> None:
         alias = params.pop("from_")
         if params.get("from") is None:
             params["from"] = alias
+
+
+_TAG_CHARS = frozenset("abcdefghijklmnopqrstuvwxyz0123456789._+-")
+
+
+def plus_address(receiving_address: str, tag: str) -> str:
+    """A plus address of an agent: its ``receiving_address`` with ``+<tag>`` before the ``@``,
+    which reaches the same agent. Give each test run or sign-up its own, then wait for mail sent
+    to it alone::
+
+        email = plus_address(agent["receiving_address"], f"run-{run_id}")
+        # ...sign up with email...
+        code = client.wait_for_received(to=email, has="code")["message"]["codes"][0]["value"]
+
+    The tag is lowercased, as addresses are matched in lower case; it may hold letters, digits,
+    ``.``, ``_``, ``-`` and ``+``, 1 to 40 of them. The part of an address before the ``@`` holds
+    at most 64 characters, so a long receiving address leaves less room for the tag, and one that
+    is 64 characters already has none: it raises ValueError, saying how much room there is."""
+    at = receiving_address.rfind("@")
+    if at < 1:
+        raise ValueError(f"Not an address: {receiving_address!r}")
+    t = tag.strip(" \t\r\n").lower()
+    if not (1 <= len(t) <= 40) or any(c not in _TAG_CHARS for c in t):
+        raise ValueError(f'A tag is 1 to 40 letters, digits, ".", "_", "-" or "+". Received: {tag!r}')
+    local = receiving_address[:at].split("+")[0]
+    room = 64 - len(local) - 1
+    if len(t) > room:
+        if room < 1:
+            raise ValueError(
+                f"{receiving_address} has no room for a tag: the part of an address before the @ holds"
+                f" at most 64 characters, and it already has {len(local)}."
+            )
+        raise ValueError(
+            f"The part of an address before the @ holds at most 64 characters, so a tag on"
+            f" {receiving_address} can have at most {room}. Received {len(t)}: {tag!r}"
+        )
+    return f"{local}+{t}@{receiving_address[at + 1:]}".lower()
 
 
 def _require_httpx() -> Any:
@@ -473,6 +517,11 @@ class Client:
                     f" It resets in {stop[0]} s (at {resets_at}): longer than this client waits on its"
                     f" own ({self.max_retry_wait:g} s)."
                 )
+            # A plan refusal names the page where the plan can be changed; the message ends with
+            # it, so it reaches a log or a test report that prints only the message.
+            upgrade_url = err.get("upgrade_url") if isinstance(err.get("upgrade_url"), str) and err.get("upgrade_url") else None
+            if upgrade_url:
+                message += f" Change your plan: {upgrade_url}"
             args = (
                 err.get("type", "rate_limit_error" if limited else "api_error"),
                 err.get("code", "unknown"),
@@ -483,7 +532,7 @@ class Client:
             )
             if limited:
                 raise RateLimitError(*args, retry_after_seconds=retry_after_seconds, resets_at=resets_at)
-            raise MailsError(*args, retry_after_seconds=retry_after_seconds, resets_at=resets_at)
+            raise MailsError(*args, retry_after_seconds=retry_after_seconds, resets_at=resets_at, upgrade_url=upgrade_url)
 
     # --- high-level helpers ---
 
@@ -696,9 +745,10 @@ class Client:
 
     def list_received(self, **opts: Any) -> Dict[str, Any]:
         """GET /api/v1/messages/received. Filters: limit, cursor, agent_id, thread_id, q,
-        ``from_`` (or ``**{"from": …}``: an address, or a domain and its subdomains) and since
+        ``from_`` (or ``**{"from": …}``: an address, or a domain and its subdomains), to (the
+        address the mail was sent to, a plus address included: :func:`plus_address`) and since
         (a datetime or an ISO 8601 string, sent as list_events sends it). Each message carries
-        ``codes`` and ``links``."""
+        ``codes``, ``links`` and ``delivered_to``."""
         _from_alias(opts)
         if opts.get("since"):
             opts["since"] = _normalize_since(opts["since"])
@@ -707,9 +757,13 @@ class Client:
     def wait_for_received(self, **opts: Any) -> Dict[str, Any]:
         """GET /api/v1/messages/received/wait — the newest received message that matches,
         waiting up to ``timeout`` seconds (0 to 50, default 30) for one to arrive. Filters:
-        agent_id, ``from_`` (or ``**{"from": …}``), since (default: the last 5 minutes) and has
-        (``"code"`` or ``"link"``). Returns ``{"message": …, "timed_out": …}``, ``message`` None
-        when none arrived in time. A sign-up code:
+        agent_id, ``from_`` (or ``**{"from": …}``), to (only mail sent to that address, such as
+        the plus address one test run signed up with: :func:`plus_address`), since (default: the
+        last 5 minutes) and has (``"code"`` or ``"link"``). Returns
+        ``{"message": …, "timed_out": …}``, ``message`` None
+        when none arrived in time. Raises :class:`MailsError` (402 ``plan_limit_exceeded``) at
+        once when the newest mail sent to ``to`` came past the plan's plus addresses a day, as
+        only a record of it was kept. A sign-up code:
         ``client.wait_for_received(from_="github.com", has="code")["message"]["codes"][0]["value"]``."""
         _from_alias(opts)
         if opts.get("since"):

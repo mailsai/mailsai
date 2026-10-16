@@ -175,7 +175,7 @@ JSON as a dict unless the table says otherwise.
 | Method | API call |
 |---|---|
 | `list_received(limit, cursor, agent_id, thread_id, q, from_, since)` | `GET /v1/messages/received` |
-| `wait_for_received(agent_id, from_, since, has, timeout)`, the newest match as soon as it arrives | `GET /v1/messages/received/wait` |
+| `wait_for_received(agent_id, from_, to, since, has, timeout)`, the newest match as soon as it arrives | `GET /v1/messages/received/wait` |
 | `get_received(id)` | `GET /v1/messages/received/{id}` |
 | `list_attachments(message_id)` | `GET /v1/messages/received/{id}/attachments` |
 | `download_attachment(message_id, attachment_id, inline=False)`, the file as `bytes` | `GET /v1/messages/received/{id}/attachments/{attachment_id}` |
@@ -325,6 +325,20 @@ code = found["message"]["codes"][0]["value"] if found["message"] else None
 
 `from_` is an address or a domain, and a domain includes its subdomains. `has` is `"code"`, or `"link"` for a `verify`, `sign_in` or `reset_password` link. `timeout` is 0 to 50 seconds (default 30), and without `since` it looks back 5 minutes. Mail judged forged and quarantined mail never match. Nothing in time is not an error: `message` is `None` and `timed_out` is `True`. The call waits that long plus 15 seconds before the client gives up on it, whatever the client's own `timeout`.
 
+### One address per sign-up or test run
+
+Mail to any plus address of an agent's `receiving_address` reaches the agent too, so each sign-up or test run can have an address of its own, and wait for that address's mail alone. `plus_address()` builds one, and `to` takes only mail sent to it:
+
+```python
+from mailsai import plus_address
+
+email = plus_address(agent["receiving_address"], f"run-{run_id}")  # qa.acme+run-1842@in.mails.ai
+# ...sign up with email...
+found = c.wait_for_received(to=email, has="code", timeout=50)
+```
+
+Each received message says which address it came to in `delivered_to`, and `list_received(to=...)` takes the same filter. A workspace may receive mail at 20 different plus addresses a day on Free, 1,000 on Pro and 10,000 on Scale. Past that, mail to a new one keeps only a record (`over_limit: "plus_address_limit"`) and raises `message.received.over_limit`, while the addresses already used that day keep working. A sign-in code or link from a service such as Google, Microsoft, Apple, a payment app or a bank never reaches a plus address either: such mail keeps only a record (`over_limit: "held_code"`), so sign up for those services at the agent's own address.
+
 ## Attachments
 
 Up to 10 files and 25 MB in all. Give each file's bytes, or an https URL that mails.ai downloads when it sends, and give a file a `content_id` to show it inside the HTML instead of attaching it. Bytes travel inside the request, so together they can come to about 3 MB: give a larger file by its URL. A batch cannot carry attachments, so send a message with files on its own:
@@ -386,6 +400,9 @@ except RateLimitError as e:
 except MailsError as e:
     print(e.type, e.code, e.message, e.status, e.request_id)
 ```
+
+A 402 (a plan limit, or a feature your plan does not include) also carries `upgrade_url`, the
+page where the plan can be changed, and its message ends with that link.
 
 A send that succeeds answers `status` `sent`, `scheduled` (a future `scheduled_at`), or
 `delivered` when delivery to every recipient was confirmed at once (with a live key, a send

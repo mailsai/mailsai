@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mailsai"
-version = "0.4.0"
+version = "0.5.0"
 description = "Email API for AI agents — Python SDK. Per-agent email addresses on your domain, per-agent reputation, and prompt-injection scanning on inbound mail. Send, receive structured inbound replies, and identify agents via REST. Intent + entity extraction is opt-in."
 readme = "README.md"
 requires-python = ">=3.10"
