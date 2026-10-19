@@ -50,7 +50,7 @@ describe("checkOptions", () => {
 
   it("refuses a setting that is not a string, and never repeats the key it was given", () => {
     assert.throws(() => checkOptions("createMails", { receivingAddress: 5 }), { message: "createMails: receivingAddress must be a string. Received: 5" });
-    assert.throws(() => checkOptions("createMails", { apiKey: { secret: "mk_live_hunter2" } }), (err) => {
+    assert.throws(() => checkOptions("createMails", { apiKey: { value: "mk_live_example" } }), (err) => {
       assert.equal(err.message, "createMails: apiKey must be a string.");
       return true;
     });
