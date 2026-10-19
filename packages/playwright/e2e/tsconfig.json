@@ -1,0 +1,17 @@
+// For tsc --noEmit over the specs and the config, as a user's project would compile them. No
+// "type": "module" in package.json, so this is the CommonJS project `npm init playwright` makes;
+// tests/esm has a package.json of its own that makes it an ES module project.
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "include": ["playwright.config.ts", "tests/**/*.ts"]
+}

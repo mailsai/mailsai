@@ -8,8 +8,9 @@ Per-agent email addresses on your domain, per-agent reputation, and prompt-injec
 npm install @mailsai/sdk
 ```
 
-The package is **ESM-only** — use `import`, not `require()`. In a plain `npm init -y`
-project, add `"type": "module"` to your package.json first.
+The package is an ES module. `import` works on Node 18 and later. On Node 20.19+ or 22.12+,
+`require("@mailsai/sdk")` works too, so a CommonJS project can use it as it is, including a
+TypeScript Playwright project without `"type": "module"`. On older Node, use `import`.
 
 ## Quick start
 

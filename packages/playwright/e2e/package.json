@@ -1,0 +1,10 @@
+{
+  "name": "mailsai-playwright-e2e",
+  "private": true,
+  "description": "The real Playwright run of @mailsai/playwright against a stand-in for the mails.ai API. Run it from packages/playwright with npm run test:e2e.",
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
+}

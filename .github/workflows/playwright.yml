@@ -1,0 +1,55 @@
+name: playwright
+
+# @mailsai/playwright (packages/playwright): its unit tests, then a real headless Playwright run of the
+# package as npm would publish it, against a stand-in for the mails.ai API
+# (packages/playwright/e2e/run.mjs). The first run uses the Playwright that package.json names; the
+# second uses 1.39.0, the oldest the package supports. Playwright before 1.50 downloads its browsers
+# from playwright.azureedge.net, which no longer serves them, so that run takes them from
+# cdn.playwright.dev, which still has them.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Playwright ${{ matrix.playwright || 'from package.json' }}
+    # Pinned, as cypress.yml is: GitHub moves ubuntu-latest to Ubuntu 26 from 2026-10-19.
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        playwright: ["", "1.39.0"]
+    defaults:
+      run:
+        working-directory: packages/playwright
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The package's own dev dependencies are tsc and Playwright Test. The e2e run installs the
+      # Playwright under test, and Chromium's headless shell, in its own folder.
+      - run: npm install --no-audit --no-fund --ignore-scripts
+      - run: npm test
+      # The system libraries Chromium runs on, which the e2e run cannot install itself.
+      - run: npx playwright install-deps chromium
+      - name: npm run test:e2e
+        if: matrix.playwright == ''
+        run: npm run test:e2e
+      - name: npm run test:e2e on Playwright ${{ matrix.playwright }}
+        if: matrix.playwright != ''
+        run: npm run test:e2e
+        env:
+          E2E_PLAYWRIGHT_VERSION: ${{ matrix.playwright }}
+          PLAYWRIGHT_DOWNLOAD_HOST: https://cdn.playwright.dev
+      - name: Keep the results (traces and the report run's JSON)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ matrix.playwright || 'package' }}-results
+          path: packages/playwright/e2e/test-results
+          if-no-files-found: ignore

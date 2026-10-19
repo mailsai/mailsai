@@ -1,0 +1,63 @@
+{
+  "name": "@mailsai/playwright",
+  "version": "0.1.0",
+  "description": "Playwright fixture for mails.ai: give each test its own email address, then wait for the sign-up code or link sent to it.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "test:e2e": "npm run build && node e2e/run.mjs"
+  },
+  "keywords": [
+    "playwright",
+    "playwright-email",
+    "playwright-fixture",
+    "email",
+    "email-testing",
+    "otp",
+    "verification-code",
+    "magic-link",
+    "e2e",
+    "mails.ai"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mailsai/mailsai.git",
+    "directory": "packages/playwright"
+  },
+  "homepage": "https://mails.ai",
+  "bugs": { "url": "https://mails.ai/contact" },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "dependencies": {
+    "@mailsai/sdk": "^0.5.2"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.39.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
+}

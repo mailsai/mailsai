@@ -126,6 +126,7 @@ did not write.
 | **[packages/sdk](packages/sdk)** | `@mailsai/sdk` — TypeScript / JavaScript, ESM. |
 | **[packages/sdk-py](packages/sdk-py)** | `mailsai` — Python 3.10+. |
 | **[packages/cypress](packages/cypress)** | `@mailsai/cypress` — Cypress commands: give each test run its own email address, then wait for the sign-up code or link sent to it. |
+| **[packages/playwright](packages/playwright)** | `@mailsai/playwright` — a Playwright fixture: give each test its own email address, then wait for the sign-up code or link sent to it. |
 | **[templates/support-agent](templates/support-agent)** | **Start here.** A working support agent — reads inbound mail, answers from your data, replies in-thread, escalates refunds, refuses prompt injection. One test key, no LLM key, no DNS. |
 | **[examples](examples)** | Seven runnable examples: send, inbox loop, the injection firewall, OpenAI Agents SDK, LangGraph, MCP client config, and an assistant you forward email to. |
 
